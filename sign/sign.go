@@ -49,10 +49,10 @@ func (d *reader) Read(b []byte) (n int, err error) {
 	return
 }
 
-// verifySign verifies the validity of the signature
+// VerifySign verifies the validity of the signature
 // return false if the signature does not match the read data
 // Causes NonCompleteRead if not reached the end (io.EOF) of the read bytes
-func (d *reader) verifySign() (ok bool, err error) {
+func (d *reader) VerifySign() (ok bool, err error) {
 	if d.signHash == nil {
 		err = NonCompleteRead
 	}

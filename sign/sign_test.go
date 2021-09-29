@@ -91,7 +91,7 @@ func TestReaderVerifier(t *testing.T) {
 		t.Error(err)
 	}
 	var ok bool
-	if ok, err = digestReader.verifySign(); err != nil {
+	if ok, err = digestReader.VerifySign(); err != nil {
 		t.Error(err)
 	}
 	if !ok {
@@ -181,13 +181,13 @@ func TestReader_verifySign(t *testing.T) {
 					t.Error(err)
 				}
 			}
-			gotOk, err := d.verifySign()
+			gotOk, err := d.VerifySign()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("verifySign() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("VerifySign() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotOk != tt.wantOk {
-				t.Errorf("verifySign() gotOk = %v, want %v", gotOk, tt.wantOk)
+				t.Errorf("VerifySign() gotOk = %v, want %v", gotOk, tt.wantOk)
 			}
 		})
 	}

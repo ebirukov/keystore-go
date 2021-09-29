@@ -5,7 +5,11 @@ import (
 	"time"
 )
 
-const magic uint32 = 0xfeedfeed
+const (
+	jksmagic   uint32 = 0xfeedfeed
+	jceksmagic uint32 = 0xcececece
+)
+
 const (
 	version01 uint32 = 1
 	version02 uint32 = 2

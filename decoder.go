@@ -1,8 +1,10 @@
 package keystore
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"github.com/pavel-v-chernykh/keystore-go/v4/java"
 	"hash"
 	"io"
 )
@@ -10,9 +12,19 @@ import (
 const defaultCertificateType = "X509"
 
 type keyStoreDecoder struct {
-	r  io.Reader
-	b  [bufSize]byte
-	md hash.Hash
+	r              io.Reader
+	b              [bufSize]byte
+	md             hash.Hash
+	javaSerializer java.Serializable
+}
+
+func newKeyStoreDecoder(r io.Reader, md hash.Hash) *keyStoreDecoder {
+	dr := bufio.NewReaderSize(r, bufSize)
+	return &keyStoreDecoder{
+		r:              dr,
+		md:             md,
+		javaSerializer: java.New(dr),
+	}
 }
 
 func (ksd *keyStoreDecoder) readUint16() (uint16, error) {
@@ -20,10 +32,6 @@ func (ksd *keyStoreDecoder) readUint16() (uint16, error) {
 
 	if _, err := io.ReadFull(ksd.r, ksd.b[:blockSize]); err != nil {
 		return 0, fmt.Errorf("read uint16: %w", err)
-	}
-
-	if _, err := ksd.md.Write(ksd.b[:blockSize]); err != nil {
-		return 0, fmt.Errorf("update digest: %w", err)
 	}
 
 	return byteOrder.Uint16(ksd.b[:blockSize]), nil
@@ -36,10 +44,6 @@ func (ksd *keyStoreDecoder) readUint32() (uint32, error) {
 		return 0, fmt.Errorf("read uint32: %w", err)
 	}
 
-	if _, err := ksd.md.Write(ksd.b[:blockSize]); err != nil {
-		return 0, fmt.Errorf("update digest: %w", err)
-	}
-
 	return byteOrder.Uint32(ksd.b[:blockSize]), nil
 }
 
@@ -48,10 +52,6 @@ func (ksd *keyStoreDecoder) readUint64() (uint64, error) {
 
 	if _, err := io.ReadFull(ksd.r, ksd.b[:blockSize]); err != nil {
 		return 0, fmt.Errorf("read uint64: %w", err)
-	}
-
-	if _, err := ksd.md.Write(ksd.b[:blockSize]); err != nil {
-		return 0, fmt.Errorf("update digest: %w", err)
 	}
 
 	return byteOrder.Uint64(ksd.b[:blockSize]), nil
@@ -72,10 +72,6 @@ func (ksd *keyStoreDecoder) readBytes(num uint32) ([]byte, error) {
 
 		result = append(result, ksd.b[:blockSize]...)
 		lenToRead -= blockSize
-	}
-
-	if _, err := ksd.md.Write(result); err != nil {
-		return nil, fmt.Errorf("update digest: %w", err)
 	}
 
 	return result, nil

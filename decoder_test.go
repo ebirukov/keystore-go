@@ -63,10 +63,10 @@ func TestReadUint16(t *testing.T) {
 	}()
 
 	for _, tt := range readUint32Table {
-		ksd := keyStoreDecoder{
-			r:  bytes.NewReader(tt.input),
-			md: sha1.New(),
-		}
+		ksd := newKeyStoreDecoder(
+			bytes.NewReader(tt.input),
+			sha1.New(),
+		)
 
 		number, err := ksd.readUint16()
 		if !reflect.DeepEqual(err, tt.err) {
@@ -75,11 +75,6 @@ func TestReadUint16(t *testing.T) {
 
 		if number != tt.number {
 			t.Errorf("invalid number '%v' '%v'", number, tt.number)
-		}
-
-		hash := ksd.md.Sum(nil)
-		if !reflect.DeepEqual(hash, tt.hash[:]) {
-			t.Errorf("invalid hash '%v' '%v'", hash, tt.hash)
 		}
 	}
 }
@@ -147,11 +142,6 @@ func TestReadUint32(t *testing.T) {
 
 		if number != tt.number {
 			t.Errorf("invalid uint32 '%v' '%v'", number, tt.number)
-		}
-
-		hash := ksd.md.Sum(nil)
-		if !reflect.DeepEqual(hash, tt.hash[:]) {
-			t.Errorf("invalid hash '%v' '%v'", hash, tt.hash)
 		}
 	}
 }
@@ -224,11 +214,6 @@ func TestReadUint64(t *testing.T) {
 		if number != tt.number {
 			t.Errorf("invalid uint64 '%v' '%v'", number, tt.number)
 		}
-
-		hash := ksd.md.Sum(nil)
-		if !reflect.DeepEqual(hash, tt.hash[:]) {
-			t.Errorf("invalid hash '%v' '%v'", hash, tt.hash)
-		}
 	}
 }
 
@@ -292,11 +277,6 @@ func TestReadBytes(t *testing.T) {
 
 		if !reflect.DeepEqual(bts, tt.bytes) {
 			t.Errorf("invalid bytes '%v' '%v'", bts, tt.bytes)
-		}
-
-		hash := ksd.md.Sum(nil)
-		if !reflect.DeepEqual(hash, tt.hash[:]) {
-			t.Errorf("invalid hash '%v' '%v'", hash, tt.hash)
 		}
 	}
 }
@@ -362,11 +342,6 @@ func TestReadString(t *testing.T) {
 
 		if str != tt.string {
 			t.Errorf("invalid string '%v' '%v'", str, tt.string)
-		}
-
-		hash := ksd.md.Sum(nil)
-		if !reflect.DeepEqual(hash, tt.hash[:]) {
-			t.Errorf("invalid hash '%v' '%v'", hash, tt.hash)
 		}
 	}
 }
@@ -468,11 +443,6 @@ func TestReadCertificate(t *testing.T) {
 
 		if !reflect.DeepEqual(cert, tt.cert) {
 			t.Errorf("invalid certificate '%v' '%v'", cert, tt.cert)
-		}
-
-		hash := ksd.md.Sum(nil)
-		if !reflect.DeepEqual(hash, tt.hash[:]) {
-			t.Errorf("invalid hash '%v' '%v'", hash, tt.hash)
 		}
 	}
 }

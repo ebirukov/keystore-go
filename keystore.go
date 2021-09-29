@@ -1,11 +1,11 @@
 package keystore
 
 import (
-	"bytes"
 	"crypto/rand"
 	"crypto/sha1"
 	"errors"
 	"fmt"
+	"github.com/pavel-v-chernykh/keystore-go/v4/sign"
 	"io"
 	"sort"
 	"strings"
@@ -94,8 +94,8 @@ func (ks KeyStore) Store(w io.Writer, password []byte) error {
 		return fmt.Errorf("update digest with whitener message: %w", err)
 	}
 
-	if err := kse.writeUint32(magic); err != nil {
-		return fmt.Errorf("write magic: %w", err)
+	if err := kse.writeUint32(jksmagic); err != nil {
+		return fmt.Errorf("write jksmagic: %w", err)
 	}
 	// always write latest version
 	if err := kse.writeUint32(version02); err != nil {
@@ -131,29 +131,29 @@ func (ks KeyStore) Store(w io.Writer, password []byte) error {
 // Load reads keystore representation from r and checks its signature.
 // It is strongly recommended to fill password slice with zero after usage.
 func (ks KeyStore) Load(r io.Reader, password []byte) error {
-	ksd := keyStoreDecoder{
-		r:  r,
-		md: sha1.New(),
-	}
+	md := sha1.New()
 
 	passwordBytes := passwordBytes(password)
 	defer zeroing(passwordBytes)
 
-	if _, err := ksd.md.Write(passwordBytes); err != nil {
+	if _, err := md.Write(passwordBytes); err != nil {
 		return fmt.Errorf("update digest with password: %w", err)
 	}
 
-	if _, err := ksd.md.Write(whitenerMessage); err != nil {
+	if _, err := md.Write(whitenerMessage); err != nil {
 		return fmt.Errorf("update digest with whitener message: %w", err)
 	}
 
+	signReader := sign.NewReader(r, md)
+	ksd := newKeyStoreDecoder(signReader, md)
+
 	readMagic, err := ksd.readUint32()
 	if err != nil {
-		return fmt.Errorf("read magic: %w", err)
+		return fmt.Errorf("read keystore type jks or jceks magic: %w", err)
 	}
 
-	if readMagic != magic {
-		return errors.New("got invalid magic")
+	if readMagic != jksmagic && readMagic != jceksmagic {
+		return errors.New("got invalid jks or jceks magic")
 	}
 
 	version, err := ksd.readUint32()
@@ -175,14 +175,12 @@ func (ks KeyStore) Load(r io.Reader, password []byte) error {
 		ks.m[alias] = entry
 	}
 
-	computedDigest := ksd.md.Sum(nil)
-
-	actualDigest, err := ksd.readBytes(uint32(ksd.md.Size()))
+	verified, err := signReader.VerifySign()
 	if err != nil {
 		return fmt.Errorf("read digest: %w", err)
 	}
 
-	if !bytes.Equal(actualDigest, computedDigest) {
+	if !verified {
 		return errors.New("got invalid digest")
 	}
 
