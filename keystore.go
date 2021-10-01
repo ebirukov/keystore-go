@@ -52,6 +52,15 @@ type Certificate struct {
 	Content []byte
 }
 
+// SecurityKeyEntry is entry for JCEKS security key
+type SecurityKeyEntry struct {
+	CreationTime     time.Time
+	EncodedParams    []byte
+	EncryptedContent []byte
+	ParamsAlg        string
+	SealAlg          string
+}
+
 type Option func(store *KeyStore)
 
 // WithOrderedAliases sets ordered option to true. Orders aliases alphabetically.
