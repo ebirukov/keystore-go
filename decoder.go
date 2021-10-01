@@ -168,6 +168,23 @@ func (ksd *keyStoreDecoder) readPrivateKeyEntry(version uint32) (PrivateKeyEntry
 	return privateKeyEntry, nil
 }
 
+func (ksd *keyStoreDecoder) readSecurityKeyEntry(_ uint32) (SecurityKeyEntry, error) {
+	creationTimeStamp, err := ksd.readUint64()
+	if err != nil {
+		return SecurityKeyEntry{}, fmt.Errorf("read creation timestamp: %w", err)
+	}
+	creationDateTime := millisecondsToTime(int64(creationTimeStamp))
+	securityKeyEntry := SecurityKeyEntry{
+		CreationTime: creationDateTime,
+	}
+	desk, err := ksd.javaSerializer.Deserialize(java.EncryptedSecurityKey{})
+	if err != nil {
+		return SecurityKeyEntry{}, fmt.Errorf("deserialize security key: %w", err)
+	}
+	securityKeyEntry.EncryptedSecurityKey = desk.(java.EncryptedSecurityKey)
+	return securityKeyEntry, nil
+}
+
 func (ksd *keyStoreDecoder) readTrustedCertificateEntry(version uint32) (TrustedCertificateEntry, error) {
 	creationTimeStamp, err := ksd.readUint64()
 	if err != nil {
@@ -211,6 +228,13 @@ func (ksd *keyStoreDecoder) readEntry(version uint32) (string, interface{}, erro
 		entry, err := ksd.readTrustedCertificateEntry(version)
 		if err != nil {
 			return "", nil, fmt.Errorf("read trusted certificate entry: %w", err)
+		}
+
+		return alias, entry, nil
+	case securityKeyTag:
+		entry, err := ksd.readSecurityKeyEntry(version)
+		if err != nil {
+			return "", nil, fmt.Errorf("read security key entry: %w", err)
 		}
 
 		return alias, entry, nil

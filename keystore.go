@@ -1,10 +1,12 @@
 package keystore
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/sha1"
 	"errors"
 	"fmt"
+	"github.com/pavel-v-chernykh/keystore-go/v4/java"
 	"github.com/pavel-v-chernykh/keystore-go/v4/sign"
 	"io"
 	"sort"
@@ -54,11 +56,9 @@ type Certificate struct {
 
 // SecurityKeyEntry is entry for JCEKS security key
 type SecurityKeyEntry struct {
-	CreationTime     time.Time
-	EncodedParams    []byte
-	EncryptedContent []byte
-	ParamsAlg        string
-	SealAlg          string
+	CreationTime         time.Time
+	SecurityKey          []byte
+	EncryptedSecurityKey java.EncryptedSecurityKey
 }
 
 type Option func(store *KeyStore)
@@ -281,6 +281,32 @@ func (ks KeyStore) IsTrustedCertificateEntry(alias string) bool {
 	_, ok := ks.m[ks.convertAlias(alias)].(TrustedCertificateEntry)
 
 	return ok
+}
+
+func (ks KeyStore) GetSecurityKeyEntry(alias string, password []byte) (SecurityKeyEntry, error) {
+	e, ok := ks.m[ks.convertAlias(alias)]
+	if !ok {
+		return SecurityKeyEntry{}, ErrEntryNotFound
+	}
+
+	ske, ok := e.(SecurityKeyEntry)
+	if !ok {
+		return SecurityKeyEntry{}, ErrWrongEntryType
+	}
+
+	dsk, err := decryptSecurityKey(ske.EncryptedSecurityKey, password)
+	if err != nil {
+		return SecurityKeyEntry{}, fmt.Errorf("decrypt security key: %w", err)
+	}
+	repKeyJavaObject, err := java.New(bytes.NewReader(dsk)).Deserialize(java.KepRep{})
+	if err != nil {
+		return SecurityKeyEntry{}, fmt.Errorf("decrypt security key: %w", err)
+	}
+	if repKey, ok := repKeyJavaObject.(java.KepRep); ok {
+		ske.SecurityKey = repKey.Encoded
+	}
+	ske.EncryptedSecurityKey = java.EncryptedSecurityKey{}
+	return ske, nil
 }
 
 // DeleteEntry deletes entry from the keystore.

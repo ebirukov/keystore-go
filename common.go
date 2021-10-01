@@ -17,6 +17,7 @@ const (
 const (
 	privateKeyTag         uint32 = 1
 	trustedCertificateTag uint32 = 2
+	securityKeyTag        uint32 = 3
 )
 const bufSize = 1024
 

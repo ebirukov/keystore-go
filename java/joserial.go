@@ -36,8 +36,8 @@ func (s *serializator) Deserialize(structureType interface{}) (obj interface{}, 
 		switch structureType.(type) {
 		case KepRep:
 			obj = NewKepRep(javaObject)
-		case SecurityKeyEntry:
-			obj = NewSecurityKeyEntry(javaObject)
+		case EncryptedSecurityKey:
+			obj = NewEncryptedSecurityKey(javaObject)
 		default:
 			err = UnknownType
 		}

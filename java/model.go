@@ -1,9 +1,7 @@
 package java
 
-import "time"
-
-type SecurityKeyEntry struct {
-	CreationTime     time.Time
+//EncryptedSecurityKey describes encryption detail of security key
+type EncryptedSecurityKey struct {
 	EncodedParams    []byte
 	EncryptedContent []byte
 	ParamsAlg        string
@@ -26,11 +24,10 @@ func NewKepRep(objDef map[string]interface{}) KepRep {
 		Encoded:   encoded}
 }
 
-func NewSecurityKeyEntry(objDef map[string]interface{}) SecurityKeyEntry {
+func NewEncryptedSecurityKey(objDef map[string]interface{}) EncryptedSecurityKey {
 	encodedParams := intToBytes(objDef["encodedParams"].([]interface{}))
 	encryptedContent := intToBytes(objDef["encryptedContent"].([]interface{}))
-	return SecurityKeyEntry{
-		//CreationTime: creationTime,
+	return EncryptedSecurityKey{
 		EncodedParams:    encodedParams,
 		EncryptedContent: encryptedContent,
 		ParamsAlg:        objDef["paramsAlg"].(string),
