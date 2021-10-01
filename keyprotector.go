@@ -7,6 +7,7 @@ import (
 	"encoding/asn1"
 	"errors"
 	"fmt"
+	tripleDES "github.com/ebirukov/PBEWithMD5AndTripleDES"
 	"io"
 )
 
@@ -170,4 +171,11 @@ func encrypt(rand io.Reader, plainKey []byte, password []byte) ([]byte, error) {
 	}
 
 	return encodedKey, nil
+}
+
+//decryptSecurityKey uses Java's custom/unpublished PBEWithMD5AndTripleDES algorithm.
+func decryptSecurityKey(encoded []byte, password []byte) (decoded []byte, err error) {
+	dec, err := tripleDES.NewDecryptCipher(password, encoded)
+	decoded = dec.Decrypt(encoded)
+	return
 }
