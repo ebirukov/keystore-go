@@ -1,0 +1,6 @@
+github.com/ebirukov/PBEWithMD5AndTripleDES v0.0.0-20210929151205-e49bf95fc13a h1:34py7vGkkqKyiTg1jc/t1MvS84ehfMa+MS9lP9g0//8=
+github.com/ebirukov/PBEWithMD5AndTripleDES v0.0.0-20210929151205-e49bf95fc13a/go.mod h1:5Q41gDt3mW6lCYKtqotItK0L/FIV2lNgNPjgHvOUTv0=
+github.com/ebirukov/jserial v1.0.1 h1:Wh64bW8EH030vu0r4K3cz7wpBUD3SFMin8XQiaSr2zw=
+github.com/ebirukov/jserial v1.0.1/go.mod h1:ijizqTMsWLPm4w57A0Fu5D4C7+lvqXlrX8GnITfYl9w=
+github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
+github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

@@ -1,6 +1,6 @@
 package java
 
-//EncryptedSecurityKey describes encryption detail of security key
+// EncryptedSecurityKey describes encryption detail of security key
 type EncryptedSecurityKey struct {
 	EncodedParams    []byte
 	EncryptedContent []byte
@@ -36,10 +36,9 @@ func NewEncryptedSecurityKey(objDef map[string]interface{}) EncryptedSecurityKey
 }
 
 func intToBytes(v []interface{}) (res []byte) {
-	res = make([]byte, len(v))
 	for i := 0; i < len(v); i++ {
 		if b, ok := v[i].(int8); ok {
-			res[i] = byte(b)
+			res = append(res, byte(b))
 		}
 	}
 	return

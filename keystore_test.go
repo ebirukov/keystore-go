@@ -12,6 +12,7 @@ import (
 )
 
 func TestSetGetMethods(t *testing.T) {
+	t.Parallel()
 	ks := New()
 	pke := PrivateKeyEntry{
 		CreationTime: time.Now(),
@@ -75,6 +76,7 @@ func TestSetGetMethods(t *testing.T) {
 }
 
 func TestIsMethods(t *testing.T) {
+	t.Parallel()
 	ks := New()
 	pke := PrivateKeyEntry{
 		CreationTime: time.Now(),
@@ -134,6 +136,7 @@ func TestIsMethods(t *testing.T) {
 }
 
 func TestAliases(t *testing.T) {
+	t.Parallel()
 	ks := New()
 	pke := PrivateKeyEntry{
 		CreationTime: time.Now(),
@@ -180,6 +183,7 @@ func TestAliases(t *testing.T) {
 }
 
 func TestLoad(t *testing.T) {
+	t.Parallel()
 	password := []byte{'p', 'a', 's', 's', 'w', 'o', 'r', 'd'}
 	defer zeroing(password)
 
@@ -231,8 +235,9 @@ func TestLoad(t *testing.T) {
 }
 
 func TestLoadKeyPassword(t *testing.T) {
-	password := []byte{'p', 'a', 's', 's', 'w', 'o', 'r', 'd'}
-	defer zeroing(password)
+	t.Parallel()
+	password := []byte{'p', 'a', 's', 's', 'w', 'o', 'r', 'd'} //nolint:wsl
+	defer zeroing(password)                                    //nolint:wsl
 
 	keyPassword := []byte{'k', 'e', 'y', 'p', 'a', 's', 's', 'w', 'o', 'r', 'd'}
 	defer zeroing(keyPassword)

@@ -13,6 +13,7 @@ import (
 )
 
 func TestReadUint16(t *testing.T) {
+	t.Parallel()
 	type readUint16Item struct {
 		input  []byte
 		number uint16
@@ -80,6 +81,7 @@ func TestReadUint16(t *testing.T) {
 }
 
 func TestReadUint32(t *testing.T) {
+	t.Parallel()
 	type readUint32Item struct {
 		input  []byte
 		number uint32
@@ -147,6 +149,7 @@ func TestReadUint32(t *testing.T) {
 }
 
 func TestReadUint64(t *testing.T) {
+	t.Parallel()
 	type readUint64Item struct {
 		input  []byte
 		number uint64
@@ -218,6 +221,7 @@ func TestReadUint64(t *testing.T) {
 }
 
 func TestReadBytes(t *testing.T) {
+	t.Parallel()
 	type readBytesItem struct {
 		input   []byte
 		readLen uint32
@@ -282,6 +286,7 @@ func TestReadBytes(t *testing.T) {
 }
 
 func TestReadString(t *testing.T) {
+	t.Parallel()
 	type readStringItem struct {
 		input  []byte
 		string string
@@ -318,7 +323,7 @@ func TestReadString(t *testing.T) {
 		str := "some string to read"
 		buf := make([]byte, 2)
 		binary.BigEndian.PutUint16(buf, uint16(len(str)))
-		buf = append(buf, []byte(str)...)
+		buf = append(buf, []byte(str)...) //nolint
 		table = append(table, readStringItem{
 			input:  buf,
 			string: str,
@@ -347,6 +352,7 @@ func TestReadString(t *testing.T) {
 }
 
 func TestReadCertificate(t *testing.T) {
+	t.Parallel()
 	type readCertificateItem struct {
 		input   []byte
 		version uint32
@@ -397,8 +403,8 @@ func TestReadCertificate(t *testing.T) {
 		table = append(table, func() readCertificateItem {
 			buf := make([]byte, 2)
 			byteOrder.PutUint16(buf, uint16(len(defaultCertificateType)))
-			buf = append(buf, []byte(defaultCertificateType)...)
-			buf = append(buf, 0, 0, 0, 0)
+			buf = append(buf, []byte(defaultCertificateType)...) //nolint
+			buf = append(buf, 0, 0, 0, 0)                        //nolint
 
 			return readCertificateItem{
 				input:   buf,
@@ -414,8 +420,8 @@ func TestReadCertificate(t *testing.T) {
 		table = append(table, func() readCertificateItem {
 			buf := make([]byte, 2)
 			byteOrder.PutUint16(buf, uint16(len(defaultCertificateType)))
-			buf = append(buf, []byte(defaultCertificateType)...)
-			buf = append(buf, 0, 0, 0, 1)
+			buf = append(buf, []byte(defaultCertificateType)...) //nolint
+			buf = append(buf, 0, 0, 0, 1)                        //nolint
 
 			return readCertificateItem{
 				input:   buf,

@@ -12,6 +12,7 @@ import (
 )
 
 func TestReader_Read(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		r  *bufio.Reader
 		md hash.Hash
@@ -57,35 +58,34 @@ func TestReader_Read(t *testing.T) {
 			true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &reader{
-				r:  tt.fields.r,
-				md: tt.fields.md,
-			}
-			gotN, err := d.Read(tt.args.b)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Read() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if gotN != tt.wantN {
-				t.Errorf("Read() gotN = %v, want %v", gotN, tt.wantN)
-			}
-		})
+	for _, tt := range tests { //nolint
+		d := &reader{
+			r:  tt.fields.r,
+			md: tt.fields.md,
+		}
+		gotN, err := d.Read(tt.args.b)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("Read() error = %v, wantErr %v", err, tt.wantErr)
+			return //nolint
+		}
+		if gotN != tt.wantN {
+			t.Errorf("Read() gotN = %v, want %v", gotN, tt.wantN)
+		}
 	}
 }
 
 func TestReaderVerifier(t *testing.T) {
+	t.Parallel()
 	md := sha1.New()
 	expected, err := hex.DecodeString("0102030405060708090a0b0c0d0e0f10")
 	if err != nil {
 		t.Error(err)
 	}
-	md.Write(expected)
-	data := append(expected, md.Sum(nil)...)
-	println(hex.EncodeToString(data))
+	_, err = md.Write(expected)
+	data := append(expected, md.Sum(nil)...) //nolint
 	md.Reset()
 	digestReader := NewReader(bytes.NewReader(data), md)
+
 	actualData, err := io.ReadAll(digestReader)
 	if err != nil {
 		t.Error(err)
@@ -103,6 +103,7 @@ func TestReaderVerifier(t *testing.T) {
 }
 
 func TestReader_verifySign(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		r            *bufio.Reader
 		md           hash.Hash
@@ -169,8 +170,9 @@ func TestReader_verifySign(t *testing.T) {
 			true,
 		},
 	}
-	for _, tt := range tests {
+	for _, tt := range tests { //nolint
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			d := &reader{
 				r:        tt.fields.r,
 				md:       tt.fields.md,
@@ -184,7 +186,7 @@ func TestReader_verifySign(t *testing.T) {
 			gotOk, err := d.VerifySign()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("VerifySign() error = %v, wantErr %v", err, tt.wantErr)
-				return
+				return //nolint
 			}
 			if gotOk != tt.wantOk {
 				t.Errorf("VerifySign() gotOk = %v, want %v", gotOk, tt.wantOk)

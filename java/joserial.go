@@ -24,7 +24,6 @@ func New(reader io.Reader) *serializator {
 	return &serializator{
 		parser: jserial.NewSerializedObjectParser(reader),
 	}
-
 }
 
 func (s *serializator) Deserialize(structureType interface{}) (obj interface{}, err error) {
@@ -48,6 +47,6 @@ func (s *serializator) Deserialize(structureType interface{}) (obj interface{}, 
 	return
 }
 
-func (s *serializator) Serialize(structureType interface{}) error {
-	panic("serialization not implemented")
+func (s *serializator) Serialize(_ interface{}) error {
+	return errors.New("serialization not implemented")
 }

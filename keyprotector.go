@@ -21,7 +21,7 @@ type keyInfo struct {
 	PrivateKey []byte
 }
 
-func decrypt(data []byte, password []byte) ([]byte, error) {
+func decrypt(data []byte, password []byte) ([]byte, error) { //nolint
 	var keyInfo keyInfo
 
 	asn1Rest, err := asn1.Unmarshal(data, &keyInfo)
@@ -174,7 +174,7 @@ func encrypt(rand io.Reader, plainKey []byte, password []byte) ([]byte, error) {
 	return encodedKey, nil
 }
 
-//decryptSecurityKey uses Java's custom/unpublished PBEWithMD5AndTripleDES algorithm.
+// decryptSecurityKey uses Java's custom/unpublished PBEWithMD5AndTripleDES algorithm.
 func decryptSecurityKey(encrypted java.EncryptedSecurityKey, password []byte) (decoded []byte, err error) {
 	dec, err := tripleDES.NewDecryptCipher(password, encrypted.EncodedParams)
 	decoded = dec.Decrypt(encrypted.EncryptedContent)
