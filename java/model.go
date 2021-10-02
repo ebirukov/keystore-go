@@ -1,6 +1,6 @@
 package java
 
-// EncryptedSecurityKey describes encryption detail of security key
+// EncryptedSecurityKey describes encryption detail of security key.
 type EncryptedSecurityKey struct {
 	EncodedParams    []byte
 	EncryptedContent []byte

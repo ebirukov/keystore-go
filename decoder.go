@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/pavel-v-chernykh/keystore-go/v4/java"
+	"github.com/pavel-v-chernykh/keystore-go/v4/java" //nolint
 	"hash"
 	"io"
 )

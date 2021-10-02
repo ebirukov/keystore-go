@@ -2,13 +2,13 @@ package java
 
 import (
 	"errors"
-	"github.com/jkeys089/jserial"
+	"github.com/jkeys089/jserial" //nolint:goimports,gci
 	"io"
 	"strings"
 )
 
 var (
-	UnknownType = errors.New("unknown structure type")
+	ErrUnknownType = errors.New("unknown structure type")
 )
 
 type Serializable interface {
@@ -16,17 +16,17 @@ type Serializable interface {
 	Deserialize(structure interface{}) (obj interface{}, err error)
 }
 
-type serializator struct {
+type Serializator struct {
 	parser *jserial.SerializedObjectParser
 }
 
-func New(reader io.Reader) *serializator {
-	return &serializator{
+func New(reader io.Reader) *Serializator {
+	return &Serializator{
 		parser: jserial.NewSerializedObjectParser(reader),
 	}
 }
 
-func (s *serializator) Deserialize(structureType interface{}) (obj interface{}, err error) {
+func (s *Serializator) Deserialize(structureType interface{}) (obj interface{}, err error) {
 	var content []interface{}
 	if content, err = s.parser.ParseSerializedObject(); content == nil || len(content) != 1 {
 		return
@@ -38,7 +38,7 @@ func (s *serializator) Deserialize(structureType interface{}) (obj interface{}, 
 		case EncryptedSecurityKey:
 			obj = NewEncryptedSecurityKey(javaObject)
 		default:
-			err = UnknownType
+			err = ErrUnknownType
 		}
 	}
 	if err != nil && strings.Contains(err.Error(), "unknown type") {
@@ -47,6 +47,6 @@ func (s *serializator) Deserialize(structureType interface{}) (obj interface{}, 
 	return
 }
 
-func (s *serializator) Serialize(_ interface{}) error {
+func (s *Serializator) Serialize(_ interface{}) error {
 	return errors.New("serialization not implemented")
 }

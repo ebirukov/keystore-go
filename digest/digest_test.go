@@ -1,4 +1,4 @@
-package sign
+package digest
 
 import (
 	"bufio"
@@ -59,7 +59,7 @@ func TestReader_Read(t *testing.T) {
 		},
 	}
 	for _, tt := range tests { //nolint
-		d := &reader{
+		d := &Reader{
 			r:  tt.fields.r,
 			md: tt.fields.md,
 		}
@@ -76,12 +76,14 @@ func TestReader_Read(t *testing.T) {
 
 func TestReaderVerifier(t *testing.T) {
 	t.Parallel()
-	md := sha1.New()
 	expected, err := hex.DecodeString("0102030405060708090a0b0c0d0e0f10")
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = md.Write(expected)
+	md := sha1.New()
+	if _, err = md.Write(expected); err != nil {
+		t.Error(err)
+	}
 	data := append(expected, md.Sum(nil)...) //nolint
 	md.Reset()
 	digestReader := NewReader(bytes.NewReader(data), md)
@@ -90,8 +92,8 @@ func TestReaderVerifier(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	var ok bool
-	if ok, err = digestReader.VerifySign(); err != nil {
+	ok, err := digestReader.VerifySign()
+	if err != nil {
 		t.Error(err)
 	}
 	if !ok {
@@ -173,7 +175,7 @@ func TestReader_verifySign(t *testing.T) {
 	for _, tt := range tests { //nolint
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			d := &reader{
+			d := &Reader{
 				r:        tt.fields.r,
 				md:       tt.fields.md,
 				signHash: tt.fields.signHash,

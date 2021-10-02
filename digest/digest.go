@@ -1,4 +1,4 @@
-package sign
+package digest
 
 import (
 	"bufio"
@@ -12,10 +12,10 @@ var (
 	ErrNonCompleteRead = errors.New("read was not completed")
 )
 
-// Reader wrapper over the reader that verifies the signature hash.
+// Reader wrapper over the Reader that verifies the signature hash.
 // Signature bytes are available in the trailing bytes of the read stream.
 // The number of bytes is determined by the signature algorithm hash.Hash.
-type reader struct {
+type Reader struct {
 	r        *bufio.Reader
 	md       hash.Hash
 	signHash []byte
@@ -23,13 +23,13 @@ type reader struct {
 
 // NewReader create a Reader over the io.Reader,
 // verifying signature corresponding to the algorithm hash.Hash.
-func NewReader(r io.Reader, md hash.Hash) *reader {
-	return &reader{r: bufio.NewReader(r), md: md}
+func NewReader(r io.Reader, md hash.Hash) *Reader {
+	return &Reader{r: bufio.NewReader(r), md: md}
 }
 
 // Read performs additional processing,
 // calculating the signature upon reaching the end (io.EOF) of the read bytes.
-func (d *reader) Read(b []byte) (n int, err error) {
+func (d *Reader) Read(b []byte) (n int, err error) {
 	n, err = d.r.Read(b)
 	rest, eof := d.r.Peek(d.md.Size())
 	if n+len(rest) < d.md.Size() { //nolint
@@ -52,11 +52,10 @@ func (d *reader) Read(b []byte) (n int, err error) {
 // VerifySign verifies the validity of the signature
 // return false if the signature does not match the read data
 // Causes ErrNonCompleteRead if not reached the end (io.EOF) of the read bytes.
-func (d *reader) VerifySign() (ok bool, err error) {
+func (d *Reader) VerifySign() (ok bool, err error) {
 	if d.signHash == nil {
 		err = ErrNonCompleteRead
 	}
-	hashSum := d.md.Sum(nil)
-	ok = bytes.Equal(hashSum, d.signHash)
-	return
+	ok = bytes.Equal(d.md.Sum(nil), d.signHash)
+	return ok, err
 }

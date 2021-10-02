@@ -3,7 +3,7 @@ package java
 import (
 	"bytes"
 	"encoding/hex"
-	"github.com/jkeys089/jserial"
+	"github.com/jkeys089/jserial" //nolint:goimports,gci
 	"reflect"
 	"testing"
 )
@@ -16,19 +16,23 @@ var (
 
 func Test_serializator_Deserialize(t *testing.T) {
 	t.Parallel()
-	decode := func(hexStr string) []byte {
+	var decode = func(hexStr string) []byte {
 		data, err := hex.DecodeString(hexStr)
 		if err != nil {
 			t.Error(err)
 		}
+
 		return data
 	}
+
 	type fields struct {
 		parser *jserial.SerializedObjectParser
 	}
+
 	type args struct {
 		structureType interface{}
 	}
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -65,7 +69,7 @@ func Test_serializator_Deserialize(t *testing.T) {
 	for _, tt := range tests { //nolint
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			s := &serializator{
+			s := &Serializator{
 				parser: tt.fields.parser,
 			}
 			gotObj, err := s.Deserialize(tt.args.structureType)

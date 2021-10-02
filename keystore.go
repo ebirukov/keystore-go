@@ -6,8 +6,8 @@ import (
 	"crypto/sha1"
 	"errors"
 	"fmt"
-	"github.com/pavel-v-chernykh/keystore-go/v4/java"
-	"github.com/pavel-v-chernykh/keystore-go/v4/sign"
+	"github.com/pavel-v-chernykh/keystore-go/v4/digest" //nolint:goimports,gci
+	"github.com/pavel-v-chernykh/keystore-go/v4/java"   //nolint:goimports,gci
 	"io"
 	"sort"
 	"strings"
@@ -153,7 +153,7 @@ func (ks KeyStore) Load(r io.Reader, password []byte) error { //nolint
 		return fmt.Errorf("update digest with whitener message: %w", err)
 	}
 
-	signReader := sign.NewReader(r, md)
+	signReader := digest.NewReader(r, md)
 	ksd := newKeyStoreDecoder(signReader, md)
 
 	readMagic, err := ksd.readUint32()
