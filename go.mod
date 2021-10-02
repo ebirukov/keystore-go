@@ -7,4 +7,4 @@ require (
 	github.com/jkeys089/jserial v1.0.0
 )
 
-replace github.com/jkeys089/jserial => ../../../github.com/ebirukov/jserial
+replace github.com/jkeys089/jserial => github.com/ebirukov/jserial v1.0.1
