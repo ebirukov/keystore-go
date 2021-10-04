@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/pavel-v-chernykh/keystore-go/v4/java" //nolint
 	"hash"
 	"io"
+
+	"github.com/pavel-v-chernykh/keystore-go/v4/java"
 )
 
 const defaultCertificateType = "X509"
@@ -177,11 +178,12 @@ func (ksd *keyStoreDecoder) readSecurityKeyEntry(_ uint32) (SecurityKeyEntry, er
 	securityKeyEntry := SecurityKeyEntry{
 		CreationTime: creationDateTime,
 	}
-	desk, err := ksd.javaSerializer.Deserialize(java.EncryptedSecurityKey{})
+	esk := java.EncryptedSecurityKey{}
+	err = ksd.javaSerializer.Deserialize(esk)
 	if err != nil {
 		return SecurityKeyEntry{}, fmt.Errorf("deserialize security key: %w", err)
 	}
-	securityKeyEntry.EncryptedSecurityKey = desk.(java.EncryptedSecurityKey)
+	securityKeyEntry.EncryptedSecurityKey = esk
 	return securityKeyEntry, nil
 }
 

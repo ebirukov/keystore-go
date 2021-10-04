@@ -1,5 +1,10 @@
 package java
 
+type ObjectBuilder interface {
+	Build(parseData map[string]interface{}) error
+	Name() string
+}
+
 // EncryptedSecurityKey describes encryption detail of security key.
 type EncryptedSecurityKey struct {
 	EncodedParams    []byte
@@ -15,24 +20,30 @@ type KepRep struct {
 	Encoded   []byte
 }
 
-func NewKepRep(objDef map[string]interface{}) KepRep {
-	encoded := intToBytes(objDef["encoded"].([]interface{}))
-	return KepRep{
-		//Type:        objDef["type"].(string),
-		Algorithm: objDef["algorithm"].(string),
-		Format:    objDef["format"].(string),
-		Encoded:   encoded}
+func (k *KepRep) Name() string {
+	return "java.security.KeyRep"
 }
 
-func NewEncryptedSecurityKey(objDef map[string]interface{}) EncryptedSecurityKey {
-	encodedParams := intToBytes(objDef["encodedParams"].([]interface{}))
-	encryptedContent := intToBytes(objDef["encryptedContent"].([]interface{}))
-	return EncryptedSecurityKey{
-		EncodedParams:    encodedParams,
-		EncryptedContent: encryptedContent,
-		ParamsAlg:        objDef["paramsAlg"].(string),
-		SealAlg:          objDef["sealAlg"].(string),
-	}
+func (k *KepRep) Build(objDef map[string]interface{}) error {
+	encoded := intToBytes(objDef["encoded"].([]interface{}))
+	k.Encoded = encoded
+	k.Algorithm = objDef["algorithm"].(string)
+	k.Format = objDef["format"].(string)
+	return nil
+}
+
+func (e EncryptedSecurityKey) Name() string {
+	return ""
+}
+
+func (e EncryptedSecurityKey) Build(parseData map[string]interface{}) error {
+	encodedParams := intToBytes(parseData["encodedParams"].([]interface{}))
+	encryptedContent := intToBytes(parseData["encryptedContent"].([]interface{}))
+	e.EncodedParams = encodedParams
+	e.EncryptedContent = encryptedContent
+	e.ParamsAlg = parseData["paramsAlg"].(string)
+	e.SealAlg = parseData["sealAlg"].(string)
+	return nil
 }
 
 func intToBytes(v []interface{}) (res []byte) {

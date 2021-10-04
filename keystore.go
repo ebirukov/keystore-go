@@ -298,14 +298,14 @@ func (ks KeyStore) GetSecurityKeyEntry(alias string, password []byte) (SecurityK
 	if err != nil {
 		return SecurityKeyEntry{}, fmt.Errorf("decrypt security key: %w", err)
 	}
-	repKeyJavaObject, err := java.New(bytes.NewReader(dsk)).Deserialize(java.KepRep{})
+	repKey := &java.KepRep{}
+	err = java.New(bytes.NewReader(dsk)).Deserialize(repKey)
 	if err != nil {
 		return SecurityKeyEntry{}, fmt.Errorf("decrypt security key: %w", err)
 	}
-	if repKey, ok := repKeyJavaObject.(java.KepRep); ok {
-		ske.SecurityKey = repKey.Encoded
-	}
+	ske.SecurityKey = repKey.Encoded
 	ske.EncryptedSecurityKey = java.EncryptedSecurityKey{}
+
 	return ske, nil
 }
 

@@ -2,18 +2,15 @@ package java
 
 import (
 	"errors"
-	"github.com/jkeys089/jserial" //nolint:goimports,gci
 	"io"
 	"strings"
-)
 
-var (
-	ErrUnknownType = errors.New("unknown structure type")
+	"github.com/jkeys089/jserial"
 )
 
 type Serializable interface {
-	Serialize(structure interface{}) error
-	Deserialize(structure interface{}) (obj interface{}, err error)
+	Serialize(w io.Writer, structure interface{}) error
+	Deserialize(structure ObjectBuilder) error
 }
 
 type Serializator struct {
@@ -26,27 +23,31 @@ func New(reader io.Reader) *Serializator {
 	}
 }
 
-func (s *Serializator) Deserialize(structureType interface{}) (obj interface{}, err error) {
-	var content []interface{}
+func (s *Serializator) Deserialize(object ObjectBuilder) (err error) {
+	if object == nil {
+		err = errors.New("deserialize: object is nil")
+
+		return
+	}
+
+	var (
+		content []interface{}
+	)
 	if content, err = s.parser.ParseSerializedObject(); content == nil || len(content) != 1 {
 		return
 	}
-	if javaObject, ok := content[0].(map[string]interface{}); ok {
-		switch structureType.(type) {
-		case KepRep:
-			obj = NewKepRep(javaObject)
-		case EncryptedSecurityKey:
-			obj = NewEncryptedSecurityKey(javaObject)
-		default:
-			err = ErrUnknownType
-		}
+	parseData, ok := content[0].(map[string]interface{})
+	if !ok {
+		panic("deserialize: unknown type of content")
 	}
+	err = object.Build(parseData)
 	if err != nil && strings.Contains(err.Error(), "unknown type") {
 		err = nil
 	}
+
 	return
 }
 
-func (s *Serializator) Serialize(_ interface{}) error {
+func (s *Serializator) Serialize(w io.Writer, structure interface{}) error {
 	return errors.New("serialization not implemented")
 }

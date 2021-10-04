@@ -6,10 +6,11 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"errors"
-	"fmt"                                                  //nolint:gci,goimports
-	tripleDES "github.com/ebirukov/PBEWithMD5AndTripleDES" //nolint:gci,goimports
-	"github.com/pavel-v-chernykh/keystore-go/v4/java"      //nolint:goimports,gci
+	"fmt"
 	"io"
+
+	tripleDES "github.com/ebirukov/PBEWithMD5AndTripleDES"
+	"github.com/pavel-v-chernykh/keystore-go/v4/java"
 )
 
 const saltLen = 20
