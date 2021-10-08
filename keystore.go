@@ -83,7 +83,7 @@ func New(options ...Option) KeyStore {
 
 // Store signs keystore using password and writes its representation into w
 // It is strongly recommended to fill password slice with zero after usage.
-func (ks KeyStore) Store(w io.Writer, password []byte) error { //nolint
+func (ks KeyStore) Store(w io.Writer, password []byte) error {
 	if len(password) < minPasswordLen {
 		return fmt.Errorf("password must be at least %d characters: %w", minPasswordLen, ErrShortPassword)
 	}
@@ -140,7 +140,7 @@ func (ks KeyStore) Store(w io.Writer, password []byte) error { //nolint
 
 // Load reads keystore representation from r and checks its signature.
 // It is strongly recommended to fill password slice with zero after usage.
-func (ks KeyStore) Load(r io.Reader, password []byte) error { //nolint
+func (ks KeyStore) Load(r io.Reader, password []byte) error {
 	md := sha1.New()
 
 	passwordBytes := passwordBytes(password)

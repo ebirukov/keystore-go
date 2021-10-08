@@ -94,7 +94,7 @@ func TestReaderVerifier(t *testing.T) {
 		t.Error(err)
 	}
 
-	data := append(expected, md.Sum(nil)...) //nolint
+	data := append(expected, md.Sum(nil)...)
 	md.Reset()
 	digestReader := NewReader(bytes.NewReader(data), md)
 

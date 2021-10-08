@@ -111,7 +111,7 @@ func (kse *keyStoreEncoder) writeCertificate(cert Certificate) error {
 	return nil
 }
 
-func (kse *keyStoreEncoder) writePrivateKeyEntry(alias string, pke PrivateKeyEntry) error { //nolint
+func (kse *keyStoreEncoder) writePrivateKeyEntry(alias string, pke PrivateKeyEntry) error {
 	if err := kse.writeUint32(privateKeyTag); err != nil {
 		return fmt.Errorf("write tag: %w", err)
 	}

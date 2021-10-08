@@ -36,7 +36,9 @@ func (d *Reader) Read(b []byte) (n int, err error) {
 	}
 
 	d.signHash, n, err = d.extractDigest(b[:n])
-	d.md.Write(b[:n])
+	if _, err := d.md.Write(b[:n]); err != nil {
+		return n, fmt.Errorf("digest reader read error: %w", err)
+	}
 
 	return
 }

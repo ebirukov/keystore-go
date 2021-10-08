@@ -328,7 +328,7 @@ func TestReadString(t *testing.T) {
 		str := "some string to read"
 		buf := make([]byte, 2)
 		binary.BigEndian.PutUint16(buf, uint16(len(str)))
-		buf = append(buf, []byte(str)...) //nolint
+		buf = append(buf, []byte(str)...)
 		table = append(table, readStringItem{
 			input:  buf,
 			string: str,
@@ -409,8 +409,8 @@ func TestReadCertificate(t *testing.T) {
 		table = append(table, func() readCertificateItem {
 			buf := make([]byte, 2)
 			byteOrder.PutUint16(buf, uint16(len(defaultCertificateType)))
-			buf = append(buf, []byte(defaultCertificateType)...) //nolint
-			buf = append(buf, 0, 0, 0, 0)                        //nolint
+			buf = append(buf, []byte(defaultCertificateType)...)
+			buf = append(buf, 0, 0, 0, 0)
 
 			return readCertificateItem{
 				input:   buf,
@@ -426,8 +426,8 @@ func TestReadCertificate(t *testing.T) {
 		table = append(table, func() readCertificateItem {
 			buf := make([]byte, 2)
 			byteOrder.PutUint16(buf, uint16(len(defaultCertificateType)))
-			buf = append(buf, []byte(defaultCertificateType)...) //nolint
-			buf = append(buf, 0, 0, 0, 1)                        //nolint
+			buf = append(buf, []byte(defaultCertificateType)...)
+			buf = append(buf, 0, 0, 0, 1)
 
 			return readCertificateItem{
 				input:   buf,

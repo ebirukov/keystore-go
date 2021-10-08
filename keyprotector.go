@@ -22,7 +22,7 @@ type keyInfo struct {
 	PrivateKey []byte
 }
 
-func decrypt(data []byte, password []byte) ([]byte, error) { //nolint
+func decrypt(data []byte, password []byte) ([]byte, error) {
 	var keyInfo keyInfo
 
 	asn1Rest, err := asn1.Unmarshal(data, &keyInfo)
