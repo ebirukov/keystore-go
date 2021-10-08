@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"hash"
 	"io"
 )
@@ -30,22 +31,28 @@ func NewReader(r io.Reader, md hash.Hash) *Reader {
 // Read performs additional processing,
 // calculating the signature upon reaching the end (io.EOF) of the read bytes.
 func (d *Reader) Read(b []byte) (n int, err error) {
-	n, err = d.r.Read(b)
-	rest, eof := d.r.Peek(d.md.Size())
-	if n+len(rest) < d.md.Size() { //nolint
+	if n, err = d.r.Read(b); err != nil {
 		return
 	}
-	if eof != nil {
-		err = eof
-		nRead := n
-		n = n + len(rest) - d.md.Size()
-		d.md.Write(b[:n])
-		d.signHash = append(b[n:nRead], rest...) //nolint
-		b = b[:n]
+
+	d.signHash, n, err = d.extractDigest(b[:n])
+	d.md.Write(b[:n])
+
+	return
+}
+
+// extractDigest extract digest from read bytes and rest of stream
+func (d *Reader) extractDigest(b []byte) (digest []byte, n int, err error) {
+	n = len(b)
+	if digest, err = d.r.Peek(d.md.Size()); errors.Is(err, io.EOF) {
+		if d.md.Size() > (n + len(digest)) {
+			return nil, len(b), fmt.Errorf("extract digest length less than %d : %w ", d.md.Size(), err)
+		}
+
+		n = n + len(digest) - d.md.Size() // calculate reading number of bytes before bytes of digest
+		digest = append(b[n:], digest...) // collect bytes of digest
 	}
-	if err == nil {
-		d.md.Write(b[:n])
-	}
+
 	return
 }
 
@@ -56,6 +63,8 @@ func (d *Reader) VerifySign() (ok bool, err error) {
 	if d.signHash == nil {
 		err = ErrNonCompleteRead
 	}
+
 	ok = bytes.Equal(d.md.Sum(nil), d.signHash)
-	return ok, err
+
+	return
 }

@@ -45,7 +45,7 @@ func TestReader_Read(t *testing.T) {
 			},
 			args{make([]byte, 4)},
 			4,
-			false,
+			true,
 		},
 		{
 			"oneByteSigSizeReaderEOF",
