@@ -14,6 +14,7 @@ import (
 
 func TestReadUint16(t *testing.T) {
 	t.Parallel()
+
 	type readUint16Item struct {
 		input  []byte
 		number uint16
@@ -82,6 +83,7 @@ func TestReadUint16(t *testing.T) {
 
 func TestReadUint32(t *testing.T) {
 	t.Parallel()
+
 	type readUint32Item struct {
 		input  []byte
 		number uint32
@@ -150,6 +152,7 @@ func TestReadUint32(t *testing.T) {
 
 func TestReadUint64(t *testing.T) {
 	t.Parallel()
+
 	type readUint64Item struct {
 		input  []byte
 		number uint64
@@ -222,6 +225,7 @@ func TestReadUint64(t *testing.T) {
 
 func TestReadBytes(t *testing.T) {
 	t.Parallel()
+
 	type readBytesItem struct {
 		input   []byte
 		readLen uint32
@@ -287,6 +291,7 @@ func TestReadBytes(t *testing.T) {
 
 func TestReadString(t *testing.T) {
 	t.Parallel()
+
 	type readStringItem struct {
 		input  []byte
 		string string
@@ -353,6 +358,7 @@ func TestReadString(t *testing.T) {
 
 func TestReadCertificate(t *testing.T) {
 	t.Parallel()
+
 	type readCertificateItem struct {
 		input   []byte
 		version uint32

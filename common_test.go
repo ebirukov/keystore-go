@@ -8,6 +8,7 @@ import (
 
 func TestZeroing(t *testing.T) {
 	t.Parallel()
+
 	type (
 		zeroingItem struct {
 			input []byte
@@ -39,6 +40,7 @@ func TestZeroing(t *testing.T) {
 
 func TestPasswordBytes(t *testing.T) {
 	t.Parallel()
+
 	type passwordBytesItem struct {
 		input  []byte
 		output []byte
