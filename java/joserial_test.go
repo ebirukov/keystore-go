@@ -28,9 +28,11 @@ func TestSerializator_Deserialize(t *testing.T) {
 	type fields struct {
 		parser *jserial.SerializedObjectParser
 	}
+
 	type args struct {
 		buildType ObjectBuilder
 	}
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -70,6 +72,7 @@ func TestSerializator_Deserialize(t *testing.T) {
 				parser: tt.fields.parser,
 			}
 			err := s.Deserialize(tt.args.buildType)
+
 			got := tt.args.buildType
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Deserialize() got = %+v, want=%+v", got, tt.want)
@@ -77,7 +80,6 @@ func TestSerializator_Deserialize(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Deserialize() error = %v, wantErr %v", err, tt.wantErr)
 			}
-
 		})
 	}
 }

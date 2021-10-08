@@ -6,12 +6,13 @@ import (
 	"crypto/sha1"
 	"errors"
 	"fmt"
-	"github.com/pavel-v-chernykh/keystore-go/v4/digest" //nolint:goimports,gci
-	"github.com/pavel-v-chernykh/keystore-go/v4/java"   //nolint:goimports,gci
 	"io"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/pavel-v-chernykh/keystore-go/v4/digest"
+	"github.com/pavel-v-chernykh/keystore-go/v4/java"
 )
 
 var (
@@ -298,11 +299,14 @@ func (ks KeyStore) GetSecurityKeyEntry(alias string, password []byte) (SecurityK
 	if err != nil {
 		return SecurityKeyEntry{}, fmt.Errorf("decrypt security key: %w", err)
 	}
+
 	repKey := &java.KepRep{}
 	err = java.New(bytes.NewReader(dsk)).Deserialize(repKey)
+
 	if err != nil {
 		return SecurityKeyEntry{}, fmt.Errorf("decrypt security key: %w", err)
 	}
+
 	ske.SecurityKey = repKey.Encoded
 	ske.EncryptedSecurityKey = java.EncryptedSecurityKey{}
 

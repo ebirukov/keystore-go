@@ -27,22 +27,39 @@ func (k *KepRep) Name() string {
 func (k *KepRep) Build(objDef map[string]interface{}) error {
 	encoded := intToBytes(objDef["encoded"].([]interface{}))
 	k.Encoded = encoded
-	k.Algorithm = objDef["algorithm"].(string)
-	k.Format = objDef["format"].(string)
+
+	if alg, ok := objDef["algorithm"].(string); ok {
+		k.Algorithm = alg
+	}
+
+	if format, ok := objDef["format"].(string); ok {
+		k.Format = format
+	}
+
 	return nil
 }
 
-func (e EncryptedSecurityKey) Name() string {
+func (e *EncryptedSecurityKey) Name() string {
 	return ""
 }
 
-func (e EncryptedSecurityKey) Build(parseData map[string]interface{}) error {
-	encodedParams := intToBytes(parseData["encodedParams"].([]interface{}))
-	encryptedContent := intToBytes(parseData["encryptedContent"].([]interface{}))
-	e.EncodedParams = encodedParams
-	e.EncryptedContent = encryptedContent
-	e.ParamsAlg = parseData["paramsAlg"].(string)
-	e.SealAlg = parseData["sealAlg"].(string)
+func (e *EncryptedSecurityKey) Build(parseData map[string]interface{}) error {
+	if encodedParams, ok := parseData["encodedParams"].([]interface{}); ok {
+		e.EncodedParams = intToBytes(encodedParams)
+	}
+
+	if encryptedContent, ok := parseData["encryptedContent"].([]interface{}); ok {
+		e.EncryptedContent = intToBytes(encryptedContent)
+	}
+
+	if pa, ok := parseData["paramsAlg"].(string); ok {
+		e.ParamsAlg = pa
+	}
+
+	if sa, ok := parseData["sealAlg"].(string); ok {
+		e.SealAlg = sa
+	}
+
 	return nil
 }
 
@@ -52,5 +69,6 @@ func intToBytes(v []interface{}) (res []byte) {
 			res = append(res, byte(b))
 		}
 	}
+
 	return
 }

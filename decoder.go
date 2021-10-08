@@ -21,6 +21,7 @@ type keyStoreDecoder struct {
 
 func newKeyStoreDecoder(r io.Reader, md hash.Hash) *keyStoreDecoder {
 	dr := bufio.NewReaderSize(r, bufSize)
+
 	return &keyStoreDecoder{
 		r:              dr,
 		md:             md,
@@ -174,16 +175,20 @@ func (ksd *keyStoreDecoder) readSecurityKeyEntry(_ uint32) (SecurityKeyEntry, er
 	if err != nil {
 		return SecurityKeyEntry{}, fmt.Errorf("read creation timestamp: %w", err)
 	}
+
 	creationDateTime := millisecondsToTime(int64(creationTimeStamp))
 	securityKeyEntry := SecurityKeyEntry{
 		CreationTime: creationDateTime,
 	}
-	esk := java.EncryptedSecurityKey{}
+	esk := &java.EncryptedSecurityKey{}
 	err = ksd.javaSerializer.Deserialize(esk)
+
 	if err != nil {
 		return SecurityKeyEntry{}, fmt.Errorf("deserialize security key: %w", err)
 	}
-	securityKeyEntry.EncryptedSecurityKey = esk
+
+	securityKeyEntry.EncryptedSecurityKey = *esk
+
 	return securityKeyEntry, nil
 }
 

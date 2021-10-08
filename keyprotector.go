@@ -179,5 +179,6 @@ func encrypt(rand io.Reader, plainKey []byte, password []byte) ([]byte, error) {
 func decryptSecurityKey(encrypted java.EncryptedSecurityKey, password []byte) (decoded []byte, err error) {
 	dec, err := tripleDES.NewDecryptCipher(password, encrypted.EncodedParams)
 	decoded = dec.Decrypt(encrypted.EncryptedContent)
+
 	return
 }

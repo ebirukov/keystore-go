@@ -13,13 +13,16 @@ import (
 
 func TestReader_Read(t *testing.T) {
 	t.Parallel()
+
 	type fields struct {
 		r  *bufio.Reader
 		md hash.Hash
 	}
+
 	type args struct {
 		b []byte
 	}
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -58,16 +61,19 @@ func TestReader_Read(t *testing.T) {
 			true,
 		},
 	}
-	for _, tt := range tests { //nolint
+	for _, tt := range tests {
 		d := &Reader{
 			r:  tt.fields.r,
 			md: tt.fields.md,
 		}
 		gotN, err := d.Read(tt.args.b)
+
 		if (err != nil) != tt.wantErr {
 			t.Errorf("Read() error = %v, wantErr %v", err, tt.wantErr)
-			return //nolint
+
+			return
 		}
+
 		if gotN != tt.wantN {
 			t.Errorf("Read() gotN = %v, want %v", gotN, tt.wantN)
 		}
@@ -76,14 +82,18 @@ func TestReader_Read(t *testing.T) {
 
 func TestReaderVerifier(t *testing.T) {
 	t.Parallel()
+
 	expected, err := hex.DecodeString("0102030405060708090a0b0c0d0e0f10")
+
 	if err != nil {
 		t.Error(err)
 	}
+
 	md := sha1.New()
 	if _, err = md.Write(expected); err != nil {
 		t.Error(err)
 	}
+
 	data := append(expected, md.Sum(nil)...) //nolint
 	md.Reset()
 	digestReader := NewReader(bytes.NewReader(data), md)
@@ -92,13 +102,16 @@ func TestReaderVerifier(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
 	ok, err := digestReader.VerifySign()
 	if err != nil {
 		t.Error(err)
 	}
+
 	if !ok {
 		t.Failed()
 	}
+
 	if !reflect.DeepEqual(actualData, expected) {
 		t.Errorf("invalid stream data actualData='%v' expected='%v'", actualData, expected)
 	}
@@ -106,17 +119,20 @@ func TestReaderVerifier(t *testing.T) {
 
 func TestReader_verifySign(t *testing.T) {
 	t.Parallel()
+
 	type fields struct {
 		r            *bufio.Reader
 		md           hash.Hash
 		signHash     []byte
 		completeRead bool
 	}
+
 	decode := func(hexStr string) []byte {
 		data, err := hex.DecodeString(hexStr)
 		if err != nil {
 			t.Error(err)
 		}
+
 		return data
 	}
 	prepareReader := func(hexData string, hexSign string) (r *bufio.Reader) {
@@ -172,24 +188,30 @@ func TestReader_verifySign(t *testing.T) {
 			true,
 		},
 	}
-	for _, tt := range tests { //nolint
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
+			fields := tt.fields
 			d := &Reader{
-				r:        tt.fields.r,
-				md:       tt.fields.md,
-				signHash: tt.fields.signHash,
+				r:        fields.r,
+				md:       fields.md,
+				signHash: fields.signHash,
 			}
-			if tt.fields.completeRead {
+
+			if fields.completeRead {
 				if _, err := io.ReadAll(d); err != nil {
 					t.Error(err)
 				}
 			}
+
 			gotOk, err := d.VerifySign()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("VerifySign() error = %v, wantErr %v", err, tt.wantErr)
-				return //nolint
+
+				return
 			}
+
 			if gotOk != tt.wantOk {
 				t.Errorf("VerifySign() gotOk = %v, want %v", gotOk, tt.wantOk)
 			}

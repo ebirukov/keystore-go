@@ -41,7 +41,7 @@ func (d *Reader) Read(b []byte) (n int, err error) {
 	return
 }
 
-// extractDigest extract digest from read bytes and rest of stream
+// extractDigest extract digest from read bytes and rest of stream.
 func (d *Reader) extractDigest(b []byte) (digest []byte, n int, err error) {
 	n = len(b)
 	if digest, err = d.r.Peek(d.md.Size()); errors.Is(err, io.EOF) {

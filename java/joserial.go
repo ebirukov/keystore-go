@@ -33,14 +33,19 @@ func (s *Serializator) Deserialize(object ObjectBuilder) (err error) {
 	var (
 		content []interface{}
 	)
+
 	if content, err = s.parser.ParseSerializedObject(); content == nil || len(content) != 1 {
 		return
 	}
+
 	parseData, ok := content[0].(map[string]interface{})
+
 	if !ok {
 		panic("deserialize: unknown type of content")
 	}
+
 	err = object.Build(parseData)
+
 	if err != nil && strings.Contains(err.Error(), "unknown type") {
 		err = nil
 	}
