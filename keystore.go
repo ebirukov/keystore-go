@@ -26,8 +26,8 @@ var (
 
 const minPasswordLen = 6
 const (
-	jdkStoreType   = 0
-	jceksStoreType = 1
+	JDKStoreType   = 0
+	JCEKSStoreType = 1
 )
 
 // KeyStore is a mapping of alias to pointer to PrivateKeyEntry or TrustedCertificateEntry.
@@ -113,7 +113,16 @@ func (ks KeyStore) Store(w io.Writer, password []byte) error {
 		return fmt.Errorf("update digest with whitener message: %w", err)
 	}
 
-	if err := kse.writeUint32(jksmagic); err != nil {
+	var magic uint32
+
+	switch ks.storeType {
+	case JDKStoreType:
+		magic = jksmagic
+	case JCEKSStoreType:
+		magic = jceksmagic
+	}
+
+	if err := kse.writeUint32(magic); err != nil {
 		return fmt.Errorf("write jksmagic: %w", err)
 	}
 	// always write latest version
@@ -149,7 +158,7 @@ func (ks KeyStore) Store(w io.Writer, password []byte) error {
 
 // Load reads keystore representation from r and checks its signature.
 // It is strongly recommended to fill password slice with zero after usage.
-func (ks KeyStore) Load(r io.Reader, password []byte) error {
+func (ks *KeyStore) Load(r io.Reader, password []byte) error {
 	md := sha1.New()
 
 	passwordBytes := passwordBytes(password)
@@ -171,8 +180,13 @@ func (ks KeyStore) Load(r io.Reader, password []byte) error {
 		return fmt.Errorf("read keystore type jks or jceks magic: %w", err)
 	}
 
-	if readMagic != jksmagic && readMagic != jceksmagic {
-		return errors.New("got invalid jks or jceks magic")
+	switch readMagic {
+	case jceksmagic:
+		ks.storeType = JCEKSStoreType
+	case jksmagic:
+		ks.storeType = JDKStoreType
+	default:
+		return fmt.Errorf("invalid magic: %w", err)
 	}
 
 	version, err := ksd.readUint32()
@@ -223,10 +237,12 @@ func (ks KeyStore) SetPrivateKeyEntry(alias string, entry PrivateKeyEntry, passw
 	)
 
 	switch ks.storeType {
-	case jdkStoreType:
+	case JDKStoreType:
 		epk, err = encrypt(rand.Reader, entry.PrivateKey, password)
-	case jceksStoreType:
-		epk, err = encryptJCEKSKey(entry.PrivateKey, password)
+	case JCEKSStoreType:
+		epk, err = encryptJCEKSKey(rand.Reader, entry.PrivateKey, password)
+	default:
+		err = errors.New("unsupported type of keystore")
 	}
 
 	if err != nil {

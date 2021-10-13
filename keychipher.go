@@ -5,17 +5,17 @@ import ( //nolint:gci
 	"crypto/cipher"
 	"crypto/des" //nolint:gosec,gci
 	"crypto/md5" //nolint:gosec,gci
-	"crypto/rand"
 	"encoding/asn1"
 	"fmt"
+	"io"
 )
 
-type PBEParams struct {
+type pbeParams struct {
 	Salt       []byte
 	Iterations int
 }
 
-func (pbe PBEParams) Encode() (enc []byte) {
+func (pbe pbeParams) Encode() (enc []byte) {
 	var err error
 	if enc, err = asn1.Marshal(pbe); err != nil {
 		panic(fmt.Errorf("can't encode PBE parameters: %w", err))
@@ -26,7 +26,7 @@ func (pbe PBEParams) Encode() (enc []byte) {
 
 const saltLength = 8
 
-func GeneratePBEParams(iterations int) PBEParams {
+func generatePBEParams(rand io.Reader, iterations int) pbeParams {
 	salt := make([]byte, saltLength)
 
 	_, err := rand.Read(salt)
@@ -34,14 +34,14 @@ func GeneratePBEParams(iterations int) PBEParams {
 		panic(fmt.Errorf("can't create salt %w", err))
 	}
 
-	return PBEParams{
+	return pbeParams{
 		Salt:       salt,
 		Iterations: iterations,
 	}
 }
 
-func DecodePBEParams(encodedParams []byte) (*PBEParams, error) {
-	pbe := new(PBEParams)
+func decodeParams(encodedParams []byte) (*pbeParams, error) {
+	pbe := new(pbeParams)
 
 	_, err := asn1.Unmarshal(encodedParams, pbe)
 	if err != nil {
@@ -58,7 +58,7 @@ type Cipher struct {
 
 // NewDecryptCipher construct decrypter cipher by PBE params and password.
 func NewDecryptCipher(password []byte, encodedParams []byte) (*Cipher, error) {
-	pbeParams, err := DecodePBEParams(encodedParams)
+	pbeParams, err := decodeParams(encodedParams)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func NewDecryptCipher(password []byte, encodedParams []byte) (*Cipher, error) {
 }
 
 // NewEncryptCipher construct encryptor cipher by PBE params and password.
-func NewEncryptCipher(password []byte, params PBEParams) *Cipher {
+func NewEncryptCipher(password []byte, params pbeParams) *Cipher {
 	encipher := new(Cipher)
 	encipher.init(password, params)
 
@@ -94,7 +94,7 @@ func (c *Cipher) Decrypt(src []byte) []byte {
 	return PKCS5Trimming(dst)
 }
 
-func (c *Cipher) init(password []byte, params PBEParams) {
+func (c *Cipher) init(password []byte, params pbeParams) {
 	var dk []byte
 	dk, c.iv = getDerivedKey(password, params.Salt, params.Iterations)
 

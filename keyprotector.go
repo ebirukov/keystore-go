@@ -112,8 +112,8 @@ func decryptJDKKey(keyInfo keyInfo, password []byte) ([]byte, error) {
 	return plainKey, nil
 }
 
-func encryptJCEKSKey(plainKey []byte, password []byte) ([]byte, error) {
-	parameters := GeneratePBEParams(5000)
+func encryptJCEKSKey(rand io.Reader, plainKey []byte, password []byte) ([]byte, error) {
+	parameters := generatePBEParams(rand, 5000)
 
 	enc := NewEncryptCipher(password, parameters)
 
