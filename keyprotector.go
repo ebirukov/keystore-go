@@ -9,13 +9,15 @@ import (
 	"fmt"
 	"io"
 
-	tripleDES "github.com/ebirukov/PBEWithMD5AndTripleDES"
 	"github.com/pavel-v-chernykh/keystore-go/v4/java"
 )
 
 const saltLen = 20
 
-var supportedPrivateKeyAlgorithmOid = asn1.ObjectIdentifier([]int{1, 3, 6, 1, 4, 1, 42, 2, 17, 1, 1})
+var (
+	jdkPrivateKeyAlgorithmOid = asn1.ObjectIdentifier([]int{1, 3, 6, 1, 4, 1, 42, 2, 17, 1, 1})
+	jcePrivateKeyAlgorithmOid = asn1.ObjectIdentifier([]int{1, 3, 6, 1, 4, 1, 42, 2, 19, 1})
+)
 
 type keyInfo struct {
 	Algo       pkix.AlgorithmIdentifier
@@ -34,10 +36,22 @@ func decrypt(data []byte, password []byte) ([]byte, error) {
 		return nil, errors.New("got extra data in encrypted key")
 	}
 
-	if !keyInfo.Algo.Algorithm.Equal(supportedPrivateKeyAlgorithmOid) {
+	switch {
+	case keyInfo.Algo.Algorithm.Equal(jdkPrivateKeyAlgorithmOid):
+		return decryptJDKKey(keyInfo, password)
+	case keyInfo.Algo.Algorithm.Equal(jcePrivateKeyAlgorithmOid):
+		dec, err := NewDecryptCipher(password, keyInfo.Algo.Parameters.FullBytes)
+		if err != nil {
+			return nil, fmt.Errorf("decrypt security key: %w", err)
+		}
+
+		return dec.Decrypt(keyInfo.PrivateKey), nil
+	default:
 		return nil, errors.New("got unsupported private key encryption algorithm")
 	}
+}
 
+func decryptJDKKey(keyInfo keyInfo, password []byte) ([]byte, error) {
 	md := sha1.New()
 
 	passwordBytes := passwordBytes(password)
@@ -96,6 +110,31 @@ func decrypt(data []byte, password []byte) ([]byte, error) {
 	}
 
 	return plainKey, nil
+}
+
+func encryptJCEKSKey(plainKey []byte, password []byte) ([]byte, error) {
+	parameters := GeneratePBEParams(5000)
+
+	enc := NewEncryptCipher(password, parameters)
+
+	encryptedKey := enc.Encrypt(plainKey)
+
+	keyInfo := keyInfo{
+		Algo: pkix.AlgorithmIdentifier{
+			Algorithm: jcePrivateKeyAlgorithmOid,
+			Parameters: asn1.RawValue{
+				FullBytes: parameters.Encode(),
+			},
+		},
+		PrivateKey: encryptedKey,
+	}
+
+	encodedKey, err := asn1.Marshal(keyInfo)
+	if err != nil {
+		return nil, fmt.Errorf("marshal encrypted key: %w", err)
+	}
+
+	return encodedKey, nil
 }
 
 func encrypt(rand io.Reader, plainKey []byte, password []byte) ([]byte, error) {
@@ -161,7 +200,7 @@ func encrypt(rand io.Reader, plainKey []byte, password []byte) ([]byte, error) {
 
 	keyInfo := keyInfo{
 		Algo: pkix.AlgorithmIdentifier{
-			Algorithm:  supportedPrivateKeyAlgorithmOid,
+			Algorithm:  jdkPrivateKeyAlgorithmOid,
 			Parameters: asn1.RawValue{Tag: 5},
 		},
 		PrivateKey: encryptedKey,
@@ -176,9 +215,11 @@ func encrypt(rand io.Reader, plainKey []byte, password []byte) ([]byte, error) {
 }
 
 // decryptSecurityKey uses Java's custom/unpublished PBEWithMD5AndTripleDES algorithm.
-func decryptSecurityKey(encrypted java.EncryptedSecurityKey, password []byte) (decoded []byte, err error) {
-	dec, err := tripleDES.NewDecryptCipher(password, encrypted.EncodedParams)
-	decoded = dec.Decrypt(encrypted.EncryptedContent)
+func decryptSecurityKey(encrypted java.EncryptedSecurityKey, password []byte) ([]byte, error) {
+	dec, err := NewDecryptCipher(password, encrypted.EncodedParams)
+	if err != nil {
+		return nil, fmt.Errorf("decrypt security key: %w", err)
+	}
 
-	return
+	return dec.Decrypt(encrypted.EncryptedContent), nil
 }

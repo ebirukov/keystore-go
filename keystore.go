@@ -25,6 +25,10 @@ var (
 )
 
 const minPasswordLen = 6
+const (
+	jdkStoreType   = 0
+	jceksStoreType = 1
+)
 
 // KeyStore is a mapping of alias to pointer to PrivateKeyEntry or TrustedCertificateEntry.
 type KeyStore struct {
@@ -32,6 +36,7 @@ type KeyStore struct {
 
 	ordered   bool
 	caseExact bool
+	storeType int
 }
 
 // PrivateKeyEntry is an entry for private keys and associated certificates.
@@ -69,6 +74,10 @@ func WithOrderedAliases() Option { return func(ks *KeyStore) { ks.ordered = true
 
 // WithCaseExactAliases sets caseExact option to true. Preserves original case of aliases.
 func WithCaseExactAliases() Option { return func(ks *KeyStore) { ks.caseExact = true } }
+
+// WithStoreType sets storeType option value. The default keystore type is "jks" (storeType value is 0),
+// which is a proprietary format. Other keystore formats are available: "jceks" (storeType value is 0).
+func WithStoreType(storeType int) Option { return func(ks *KeyStore) { ks.storeType = storeType } }
 
 // New returns new initialized instance of the KeyStore.
 func New(options ...Option) KeyStore {
@@ -208,7 +217,18 @@ func (ks KeyStore) SetPrivateKeyEntry(alias string, entry PrivateKeyEntry, passw
 		return fmt.Errorf("password must be at least %d characters: %w", minPasswordLen, ErrShortPassword)
 	}
 
-	epk, err := encrypt(rand.Reader, entry.PrivateKey, password)
+	var (
+		epk []byte
+		err error
+	)
+
+	switch ks.storeType {
+	case jdkStoreType:
+		epk, err = encrypt(rand.Reader, entry.PrivateKey, password)
+	case jceksStoreType:
+		epk, err = encryptJCEKSKey(entry.PrivateKey, password)
+	}
+
 	if err != nil {
 		return fmt.Errorf("encrypt private key: %w", err)
 	}
