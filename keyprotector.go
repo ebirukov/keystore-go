@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pavel-v-chernykh/keystore-go/v4/java"
+	"github.com/pavel-v-chernykh/keystore-go/v4/jserial"
 )
 
 const saltLen = 20
@@ -215,7 +215,7 @@ func encrypt(rand io.Reader, plainKey []byte, password []byte) ([]byte, error) {
 }
 
 // decryptSecurityKey uses Java's custom/unpublished PBEWithMD5AndTripleDES algorithm.
-func decryptSecurityKey(encrypted java.EncryptedSecurityKey, password []byte) ([]byte, error) {
+func decryptSecurityKey(encrypted jserial.EncryptedSecurityKey, password []byte) ([]byte, error) {
 	dec, err := NewDecryptCipher(password, encrypted.EncodedParams)
 	if err != nil {
 		return nil, fmt.Errorf("decrypt security key: %w", err)

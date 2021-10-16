@@ -7,25 +7,25 @@ import (
 	"hash"
 	"io"
 
-	"github.com/pavel-v-chernykh/keystore-go/v4/java"
+	"github.com/pavel-v-chernykh/keystore-go/v4/jserial"
 )
 
 const defaultCertificateType = "X509"
 
 type keyStoreDecoder struct {
-	r              io.Reader
-	b              [bufSize]byte
-	md             hash.Hash
-	javaSerializer java.Serializable
+	r           io.Reader
+	b           [bufSize]byte
+	md          hash.Hash
+	javaDecoder jserial.Decoder
 }
 
 func newKeyStoreDecoder(r io.Reader, md hash.Hash) *keyStoreDecoder {
-	dr := bufio.NewReaderSize(r, bufSize)
+	br := bufio.NewReaderSize(r, bufSize)
 
 	return &keyStoreDecoder{
-		r:              dr,
-		md:             md,
-		javaSerializer: java.New(dr),
+		r:           br,
+		md:          md,
+		javaDecoder: jserial.NewDecoder(br),
 	}
 }
 
@@ -180,8 +180,8 @@ func (ksd *keyStoreDecoder) readSecurityKeyEntry(_ uint32) (SecurityKeyEntry, er
 	securityKeyEntry := SecurityKeyEntry{
 		CreationTime: creationDateTime,
 	}
-	esk := &java.EncryptedSecurityKey{}
-	err = ksd.javaSerializer.Deserialize(esk)
+	esk := &jserial.EncryptedSecurityKey{}
+	err = ksd.javaDecoder.Decode(esk)
 
 	if err != nil {
 		return SecurityKeyEntry{}, fmt.Errorf("deserialize security key: %w", err)

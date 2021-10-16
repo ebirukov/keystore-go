@@ -11,8 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pavel-v-chernykh/keystore-go/v4/digest"
-	"github.com/pavel-v-chernykh/keystore-go/v4/java"
+	"github.com/pavel-v-chernykh/keystore-go/v4/jserial"
 )
 
 var (
@@ -64,7 +63,7 @@ type Certificate struct {
 type SecurityKeyEntry struct {
 	CreationTime         time.Time
 	SecurityKey          []byte
-	EncryptedSecurityKey java.EncryptedSecurityKey
+	EncryptedSecurityKey jserial.EncryptedSecurityKey
 }
 
 type Option func(store *KeyStore)
@@ -172,7 +171,7 @@ func (ks *KeyStore) Load(r io.Reader, password []byte) error {
 		return fmt.Errorf("update digest with whitener message: %w", err)
 	}
 
-	signReader := digest.NewReader(r, md)
+	signReader := NewReader(r, md)
 	ksd := newKeyStoreDecoder(signReader, md)
 
 	readMagic, err := ksd.readUint32()
@@ -336,15 +335,15 @@ func (ks KeyStore) GetSecurityKeyEntry(alias string, password []byte) (SecurityK
 		return SecurityKeyEntry{}, fmt.Errorf("decrypt security key: %w", err)
 	}
 
-	repKey := &java.KepRep{}
-	err = java.New(bytes.NewReader(dsk)).Deserialize(repKey)
+	repKey := &jserial.KeyRep{}
+	err = jserial.NewDecoder(bytes.NewReader(dsk)).Decode(repKey)
 
 	if err != nil {
 		return SecurityKeyEntry{}, fmt.Errorf("decrypt security key: %w", err)
 	}
 
 	ske.SecurityKey = repKey.Encoded
-	ske.EncryptedSecurityKey = java.EncryptedSecurityKey{}
+	ske.EncryptedSecurityKey = jserial.EncryptedSecurityKey{}
 
 	return ske, nil
 }

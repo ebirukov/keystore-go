@@ -1,4 +1,4 @@
-package digest
+package keystore
 
 import (
 	"bufio"
